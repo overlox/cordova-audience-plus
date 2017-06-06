@@ -272,7 +272,12 @@
 
 - (void) updateMarker:(CDVInvokedUrlCommand*)command {
     NSDictionary* marker = [command.arguments objectAtIndex:0];
-
+    NSArray *annotations = _mapView.annotations;
+    NSLog(@"%@", [marker valueForKey:@"title"]);
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
+    NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
+    MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
+    [_mapView removeAnnotations:[NSArray arrayWithObjects:annotation, nil]];
 
     if (marker != nil) {
         NSArray *markers = [NSArray arrayWithObjects:marker, nil];
