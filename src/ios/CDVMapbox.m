@@ -85,16 +85,18 @@
   _mapView.zoomEnabled = ![[args objectForKey:@"disableZoom"] boolValue];
 
     [self.webView addSubview:_mapView];
-
-    UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
-    button.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-    UIImage *btnImage = [UIImage imageNamed:@"www/img/mylocation.png"];
-    [button setBackgroundImage:btnImage forState:UIControlStateNormal];
-    [button sizeToFit];
-    button.center = CGPointMake(_mapView.frame.size.width - 80, 0);
-    button.frame = CGRectMake(button.frame.origin.x, _mapView.frame.size.height - button.frame.size.height - 5, button.frame.size.width, button.frame.size.height);
-    [button addTarget:self action:@selector(setMyLocationButtonTouched:) forControlEvents:UIControlEventTouchDown];
-    [_mapView addSubview:button];
+    
+    if (![[args objectForKey:@"hideSetMyLocation"] boolValue]) {
+        UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
+        button.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
+        UIImage *btnImage = [UIImage imageNamed:@"www/img/mylocation.png"];
+        [button setBackgroundImage:btnImage forState:UIControlStateNormal];
+        [button sizeToFit];
+        button.center = CGPointMake(_mapView.frame.size.width - 80, 0);
+        button.frame = CGRectMake(button.frame.origin.x, _mapView.frame.size.height - button.frame.size.height - 5, button.frame.size.width, button.frame.size.height);
+        [button addTarget:self action:@selector(setMyLocationButtonTouched:) forControlEvents:UIControlEventTouchDown];
+        [_mapView addSubview:button];
+    }
 
     // render markers async as the app will crash if we add it before the map is loaded.. and the delegate events are not sufficiently helpful
   NSArray* markers = [args objectForKey:@"markers"];
