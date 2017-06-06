@@ -10,6 +10,9 @@
 @property (retain) NSString *regionWillChangeAnimatedCallbackId;
 @property (retain) NSString *regionIsChangingCallbackId;
 @property (retain) NSString *regionDidChangeAnimatedCallbackId;
+@property (retain) NSString *onSetMyLocationCallbackId;
+
+
 
 - (void) show:(CDVInvokedUrlCommand*)command;
 - (void) hide:(CDVInvokedUrlCommand*)command;
@@ -40,7 +43,10 @@
 - (void) onRegionIsChanging:(CDVInvokedUrlCommand*)command;
 - (void) onRegionDidChange:(CDVInvokedUrlCommand*)command;
 
+
 - (void) addMarker:(CDVInvokedUrlCommand*)command;
+
+- (void) addToggleButton:(CDVInvokedUrlCommand*)command;
 
 @end
 

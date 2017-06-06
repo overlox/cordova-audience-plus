@@ -94,5 +94,9 @@ module.exports = {
 
   onRegionDidChange: function(callback){
     cordova.exec(callback, null, "Mapbox", "onRegionDidChange", []);
+  },
+
+  onSetMyLocation: function(callback){
+    cordova.exec(callback, null, "Mapbox", "onSetMyLocation", []);
   }
 };
