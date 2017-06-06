@@ -237,6 +237,41 @@
   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
 
+- (void) addMarker:(CDVInvokedUrlCommand*)command {
+    NSDictionary* marker = [command.arguments objectAtIndex:0];
+    if (marker != nil) {
+        NSArray *markers = [NSArray arrayWithObjects:marker, nil];
+        [self putMarkersOnTheMap:markers];
+    }
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) removeMarker:(CDVInvokedUrlCommand*)command {
+    NSDictionary* marker = [command.arguments objectAtIndex:0];
+    NSArray *annotations = _mapView.annotations;
+    NSLog(@"%@", [marker valueForKey:@"title"]);
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
+    NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
+    MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
+    [_mapView removeAnnotations:[NSArray arrayWithObjects:annotation, nil]];
+
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) updateMarker:(CDVInvokedUrlCommand*)command {
+    NSDictionary* marker = [command.arguments objectAtIndex:0];
+
+
+    if (marker != nil) {
+        NSArray *markers = [NSArray arrayWithObjects:marker, nil];
+        [self putMarkersOnTheMap:markers];
+    }
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
 - (void) removeAllMarkers:(CDVInvokedUrlCommand*)command {
   NSArray *annotations = _mapView.annotations;
   if (annotations) {
@@ -286,7 +321,6 @@
 
 -(NSData *)dataFromBase64EncodedString:(NSString *)string{
     if (string.length > 0) {
-        
         //the iPhone has base 64 decoding built in but not obviously. The trick is to
         //create a data url that's base 64 encoded and ask an NSData to load it.
         NSString *data64URLString = [NSString stringWithFormat:@"data:;base64,%@", string];
@@ -313,7 +347,6 @@
             NSString *encodedImage=[data valueForKey:@"data"];
             //svg image instead of url if specified
             NSString *svgImage=[data valueForKey:@"svg"];
-            
             NSString *reuseIdentifier=[data valueForKey:@"reuseIdentifier"];
             //checking and creating caching identifier
             if(!reuseIdentifier){
@@ -332,7 +365,6 @@
                 if(annotationImage)
                     return annotationImage;
             }
-            
             UIImage *image;
             if(url){
                 if([url hasSuffix:@".svg"])
@@ -395,12 +427,10 @@
             // To make this padding non-interactive, we create another image object
             // with a custom alignment rect that excludes the padding.
             image = [image imageWithAlignmentRectInsets:UIEdgeInsetsMake(0, 0, image.size.height/2, 0)];
-            
             return [MGLAnnotationImage annotationImageWithImage:image reuseIdentifier:reuseIdentifier];
         }
     }
         return nil;
-    
 }
 
 

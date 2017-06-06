@@ -40,6 +40,8 @@
 - (void) onRegionIsChanging:(CDVInvokedUrlCommand*)command;
 - (void) onRegionDidChange:(CDVInvokedUrlCommand*)command;
 
+- (void) addMarker:(CDVInvokedUrlCommand*)command;
+
 @end
 
 @protocol MapboxAnnotationWithImage <MGLAnnotation>

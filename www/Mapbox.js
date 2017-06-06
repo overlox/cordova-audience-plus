@@ -10,7 +10,7 @@ module.exports = {
 	  //registering default action
 	  this.addBackButtonCallback(this.defaultBackButtonAction);
   },
-  
+
   hide: function (options, successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "Mapbox", "hide", [options]);
   },
@@ -19,12 +19,21 @@ module.exports = {
     cordova.exec(successCallback, errorCallback, "Mapbox", "addMarkers", [options]);
   },
 
+  addMarker: function (options, successCallback, errorCallback) {
+    cordova.exec(successCallback, errorCallback, "Mapbox", "addMarker", [options]);
+  },
+  updateMarker: function (options, successCallback, errorCallback) {
+    cordova.exec(successCallback, errorCallback, "Mapbox", "updateMarker", [options]);
+  },
   addBackButtonCallback: function(callback){
 	  cordova.exec(callback, null, "Mapbox", "addBackButtonCallback", []);
   },
-  
+
   removeAllMarkers: function (successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "Mapbox", "removeAllMarkers", []);
+  },
+  removeMarker: function (options, successCallback, errorCallback) {
+    cordova.exec(successCallback, errorCallback, "Mapbox", "removeMarker", [options]);
   },
 
   addMarkerCallback: function (callback) {
