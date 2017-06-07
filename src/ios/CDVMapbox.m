@@ -85,14 +85,14 @@
   _mapView.zoomEnabled = ![[args objectForKey:@"disableZoom"] boolValue];
 
     [self.webView addSubview:_mapView];
-    
+
     if (![[args objectForKey:@"hideSetMyLocation"] boolValue]) {
         UIButton *button = [UIButton buttonWithType:UIButtonTypeSystem];
         button.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleRightMargin;
-        UIImage *btnImage = [UIImage imageNamed:@"www/img/mylocation.png"];
+        UIImage *btnImage = [UIImage imageNamed:@"www/img/loc.png"];
         [button setBackgroundImage:btnImage forState:UIControlStateNormal];
         [button sizeToFit];
-        button.center = CGPointMake(_mapView.frame.size.width - 80, 0);
+        button.center = CGPointMake(_mapView.frame.size.width - 30, 0);
         button.frame = CGRectMake(button.frame.origin.x, _mapView.frame.size.height - button.frame.size.height - 5, button.frame.size.width, button.frame.size.height);
         [button addTarget:self action:@selector(setMyLocationButtonTouched:) forControlEvents:UIControlEventTouchDown];
         [_mapView addSubview:button];

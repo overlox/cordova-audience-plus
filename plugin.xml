@@ -17,7 +17,10 @@
   <repo>https://github.com/Telerik-Verified-Plugins/Mapbox</repo>
 
   <preference name="ACCESS_TOKEN" />
-  <asset src="www/img/mylocation.png" target="img/mylocation.png" />
+  <asset src="www/img/loc.png" target="img/loc.png" />
+  <asset src="www/img/loc@2x.png" target="img/loc@2x.png" />
+  <asset src="www/img/loc@3x.png" target="img/loc@3x.png" />
+  <asset src="www/img/loc.svg" target="img/loc.svg" />
   <engines>
     <engine name="cordova" version=">=3.5.0"/>
     <!--engine name="cordova-android" version=">=4" /-->
