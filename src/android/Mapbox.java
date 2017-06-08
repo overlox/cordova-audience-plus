@@ -1,5 +1,6 @@
 package com.telerik.plugins.mapbox;
 
+//import com.telerik.plugins.mapbox.R;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
@@ -8,27 +9,27 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.os.Build;
 import android.support.annotation.NonNull;
+import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.support.v4.app.ActivityCompat;
 import android.util.Base64;
+import android.util.Log;
 import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.support.design.widget.FloatingActionButton;
 
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
+import com.mapbox.mapboxsdk.annotations.*;
 import com.mapbox.mapboxsdk.camera.CameraPosition;
 import com.mapbox.mapboxsdk.camera.CameraUpdateFactory;
 import com.mapbox.mapboxsdk.constants.Style;
-import com.mapbox.mapboxsdk.annotations.Marker;
-import com.mapbox.mapboxsdk.annotations.MarkerOptions;
-import com.mapbox.mapboxsdk.annotations.PolygonOptions;
 import com.mapbox.mapboxsdk.geometry.LatLng;
 import com.mapbox.mapboxsdk.geometry.LatLngZoom;
 import com.mapbox.mapboxsdk.views.MapView;
-import com.mapbox.mapboxsdk.annotations.IconFactory;
-import com.mapbox.mapboxsdk.annotations.Icon;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -42,14 +43,15 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.graphics.drawable.BitmapDrawable;
 
 import android.content.Context;
 import android.content.res.AssetManager;
-
 
 // TODO for screen rotation, see https://www.mapbox.com/mapbox-android-sdk/#screen-rotation
 // TODO fox Xwalk compat, see nativepagetransitions plugin
@@ -68,6 +70,9 @@ public class Mapbox extends CordovaPlugin {
   private static final String ACTION_HIDE = "hide";
   private static final String ACTION_ADD_BACKBUTTON_CALLBACK = "addBackButtonCallback";
   private static final String ACTION_ADD_MARKERS = "addMarkers";
+  private static final String ACTION_ADD_MARKER = "addMarker";
+  private static final String ACTION_REMOVE_MARKER = "removeMarker";
+  private static final String ACTION_UPDATE_MARKER = "updateMarker";
   private static final String ACTION_REMOVE_ALL_MARKERS = "removeAllMarkers";
   private static final String ACTION_ADD_MARKER_CALLBACK = "addMarkerCallback";
   // TODO:
@@ -84,6 +89,8 @@ public class Mapbox extends CordovaPlugin {
   private static final String ACTION_ON_REGION_WILL_CHANGE = "onRegionWillChange";
   private static final String ACTION_ON_REGION_IS_CHANGING = "onRegionIsChanging";
   private static final String ACTION_ON_REGION_DID_CHANGE = "onRegionDidChange";
+
+
   // TODO:
   // private static final String ACTION_OFF_REGION_WILL_CHANGE = "offRegionWillChange";
   // private static final String ACTION_OFF_REGION_IS_CHANGING = "offRegionIsChanging";
@@ -129,7 +136,6 @@ public class Mapbox extends CordovaPlugin {
         final int bottom = applyRetinaFactor(margins == null || margins.isNull("bottom") ? 0 : margins.getInt("bottom"));
 
         final JSONObject center = options.isNull("center") ? null : options.getJSONObject("center");
-
         this.showUserLocation = !options.isNull("showUserLocation") && options.getBoolean("showUserLocation");
 
         cordova.getActivity().runOnUiThread(new Runnable() {
@@ -151,6 +157,32 @@ public class Mapbox extends CordovaPlugin {
               mapView.setScrollEnabled(options.isNull("disableScroll") || !options.getBoolean("disableScroll"));
               mapView.setZoomEnabled(options.isNull("disableZoom") || !options.getBoolean("disableZoom"));
               mapView.setTiltEnabled(options.isNull("disableTilt") || !options.getBoolean("disableTilt"));
+
+
+              if (options.isNull("hideSetMyLocation") || !options.getBoolean("hideSetMyLocation")) {
+                FloatingActionButton floatingActionButton = (FloatingActionButton) cordova.getActivity().findViewById(R.id.location_toggle_fab);
+
+//                Button button = new Button(webView.getContext());
+//                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+//                        FrameLayout.LayoutParams.WRAP_CONTENT,
+//                        FrameLayout.LayoutParams.WRAP_CONTENT);
+//                params.topMargin = 0;
+//
+//                button.setText("dynamic Button");
+//                cordova.getActivity().addContentView(webView, params);
+//                RelativeLayout.LayoutParams lay = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+//                        ViewGroup.LayoutParams.WRAP_CONTENT);
+//                lay.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+//                lay.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+//                lay.setMargins(2,2,2,2);
+//                floatingActionButton.setLayoutParams(lay);
+//
+//                floatingActionButton.setOnClickListener(new View.OnClickListener() {
+//                  @Override
+//                  public void onClick(View view) {
+//                  }
+//                });
+              }
 
               // placing these offscreen in case the user wants to hide them
               if (!options.isNull("hideAttribution") && options.getBoolean("hideAttribution")) {
@@ -386,13 +418,52 @@ public class Mapbox extends CordovaPlugin {
           public void run() {
             try {
               addMarkers(args.getJSONArray(0));
+              callbackContext.success(args.getJSONArray(0));
+            } catch (Throwable e) {
+              callbackContext.error(e.toString());
+            }
+          }
+        });
+      } else if (ACTION_ADD_MARKER.equals(action)) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              addMarkers(args.getJSONArray(0));
               callbackContext.success();
             } catch (Throwable e) {
               callbackContext.error(e.toString());
             }
           }
         });
-
+      } else if (ACTION_UPDATE_MARKER.equals(action)) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              JSONObject marker = args.getJSONObject(0);
+              List<Annotation> markers = mapView.getAllAnnotations();
+              Annotation sel_marker = null;
+              for (int i = 0; i < markers.size(); i++) {
+                Marker sel = (Marker) markers.get(i);
+                if (sel.getTitle().equals(marker.getString("title"))){
+                  mapView.removeMarker(sel);
+                }
+              }
+              final MarkerOptions mo = new MarkerOptions();
+              mo.title(marker.isNull("title") ? null : marker.getString("title"));
+              mo.snippet(marker.isNull("subtitle") ? null : marker.getString("subtitle"));
+              mo.position(new LatLng(marker.getDouble("lat"), marker.getDouble("lng")));
+              if (marker.has("image")) {
+                mo.icon(createIcon(marker));
+              }
+              mapView.addMarker(mo);
+              callbackContext.success();
+            } catch (Throwable e) {
+              callbackContext.error(e.toString());
+            }
+          }
+        });
       } else if (ACTION_REMOVE_ALL_MARKERS.equals(action)) {
         if (mapView != null) {
           cordova.getActivity().runOnUiThread(new Runnable() {
