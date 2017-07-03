@@ -25,6 +25,9 @@ module.exports = {
   updateMarker: function (options, successCallback, errorCallback) {
     cordova.exec(successCallback, errorCallback, "Mapbox", "updateMarker", [options]);
   },
+  showMarkerAnnotation: function (options, successCallback, errorCallback) {
+    cordova.exec(successCallback, errorCallback, "Mapbox", "showMarkerAnnotation", [options]);
+  },
   addBackButtonCallback: function(callback){
 	  cordova.exec(callback, null, "Mapbox", "addBackButtonCallback", []);
   },

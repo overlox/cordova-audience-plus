@@ -275,7 +275,6 @@
 - (void) updateMarker:(CDVInvokedUrlCommand*)command {
     NSDictionary* marker = [command.arguments objectAtIndex:0];
     NSArray *annotations = _mapView.annotations;
-    NSLog(@"%@", [marker valueForKey:@"title"]);
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
     NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
     MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
@@ -285,6 +284,19 @@
         NSArray *markers = [NSArray arrayWithObjects:marker, nil];
         [self putMarkersOnTheMap:markers];
     }
+    CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+}
+
+- (void) showMarkerAnnotation:(CDVInvokedUrlCommand*)command {
+    NSDictionary* marker = [command.arguments objectAtIndex:0];
+
+    NSArray *annotations = _mapView.annotations;
+    NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
+    NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
+    MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
+    if (marker != nil)
+    [_mapView selectAnnotation:annotation animated:YES];
     CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -512,6 +524,7 @@
 - (void) onRegionDidChange:(CDVInvokedUrlCommand*)command {
   self.regionDidChangeAnimatedCallbackId = command.callbackId;
 }
+
 #pragma mark - MGLMapViewDelegate
 
 // this method is invoked every time an annotation is clicked

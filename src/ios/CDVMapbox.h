@@ -18,6 +18,9 @@
 - (void) hide:(CDVInvokedUrlCommand*)command;
 
 - (void) addMarkers:(CDVInvokedUrlCommand*)command;
+- (void) showMarkerAnnotation:(CDVInvokedUrlCommand*)command;
+
+
 - (void) removeAllMarkers:(CDVInvokedUrlCommand*)command;
 - (void) addMarkerCallback:(CDVInvokedUrlCommand*)command;
 
