@@ -89,6 +89,7 @@ public class Mapbox extends CordovaPlugin {
   private static final String ACTION_ON_REGION_WILL_CHANGE = "onRegionWillChange";
   private static final String ACTION_ON_REGION_IS_CHANGING = "onRegionIsChanging";
   private static final String ACTION_ON_REGION_DID_CHANGE = "onRegionDidChange";
+  private static final String ACTION_ON_SET_MY_LOCATION = "onSetMyLocation";
 
 
   // TODO:
@@ -103,6 +104,9 @@ public class Mapbox extends CordovaPlugin {
   private CallbackContext markerCallbackContext;
   private CallbackContext backbuttonCallbackContext;
   private boolean showUserLocation;
+  private boolean setMyLocation;
+  private Button my_location_button;
+
 
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
@@ -137,6 +141,7 @@ public class Mapbox extends CordovaPlugin {
 
         final JSONObject center = options.isNull("center") ? null : options.getJSONObject("center");
         this.showUserLocation = !options.isNull("showUserLocation") && options.getBoolean("showUserLocation");
+        this.setMyLocation = options.isNull("hideSetMyLocation") || options.getBoolean("hideSetMyLocation") == false;
 
         cordova.getActivity().runOnUiThread(new Runnable() {
           @Override
@@ -157,32 +162,6 @@ public class Mapbox extends CordovaPlugin {
               mapView.setScrollEnabled(options.isNull("disableScroll") || !options.getBoolean("disableScroll"));
               mapView.setZoomEnabled(options.isNull("disableZoom") || !options.getBoolean("disableZoom"));
               mapView.setTiltEnabled(options.isNull("disableTilt") || !options.getBoolean("disableTilt"));
-
-
-              if (options.isNull("hideSetMyLocation") || !options.getBoolean("hideSetMyLocation")) {
-                FloatingActionButton floatingActionButton = (FloatingActionButton) cordova.getActivity().findViewById(R.id.location_toggle_fab);
-
-//                Button button = new Button(webView.getContext());
-//                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-//                        FrameLayout.LayoutParams.WRAP_CONTENT,
-//                        FrameLayout.LayoutParams.WRAP_CONTENT);
-//                params.topMargin = 0;
-//
-//                button.setText("dynamic Button");
-//                cordova.getActivity().addContentView(webView, params);
-//                RelativeLayout.LayoutParams lay = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
-//                        ViewGroup.LayoutParams.WRAP_CONTENT);
-//                lay.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-//                lay.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-//                lay.setMargins(2,2,2,2);
-//                floatingActionButton.setLayoutParams(lay);
-//
-//                floatingActionButton.setOnClickListener(new View.OnClickListener() {
-//                  @Override
-//                  public void onClick(View view) {
-//                  }
-//                });
-              }
 
               // placing these offscreen in case the user wants to hide them
               if (!options.isNull("hideAttribution") && options.getBoolean("hideAttribution")) {
@@ -227,6 +206,23 @@ public class Mapbox extends CordovaPlugin {
             params.setMargins(left, top, right, bottom);
             mapView.setLayoutParams(params);
             layout.addView(mapView);
+
+            if (setMyLocation) {
+              RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(200, 200);
+              lparams.setMargins(webViewWidth - left - right - 220, webViewHeight - top - bottom - 220, 0, 0);
+              my_location_button = new Button(mapView.getContext());
+              try {
+                Context ctx = cordova.getActivity().getApplicationContext();
+                InputStream istream = ctx.getResources().getAssets().open("www/img/loc.svg");
+                my_location_button.setBackground(
+                        createSVG(SVG.getFromInputStream(istream), 200, 200));
+              } catch (Throwable e) {
+                callbackContext.error(e.toString());
+              };
+              my_location_button.setLayoutParams(lparams);
+              mapView.addView(my_location_button);
+            }
+
             callbackContext.success();
           }
         });
@@ -523,6 +519,8 @@ public class Mapbox extends CordovaPlugin {
           mapView.addOnMapChangedListener(new RegionDidChangeListener(callbackContext));
         }
 
+      } else if (ACTION_ON_SET_MY_LOCATION.equals(action)) {
+          my_location_button.setOnClickListener(new SetMyLocationListener(callbackContext));
       } else {
         return false;
       }
@@ -592,7 +590,7 @@ public class Mapbox extends CordovaPlugin {
     } finally {
       if (istream != null)
         istream.close();
-    }
+  }
     return icon;
   }
 
@@ -630,6 +628,21 @@ public class Mapbox extends CordovaPlugin {
     }
   }
 
+  private class MyLocationClickListener implements View.OnClickListener {
+    private CallbackContext callback;
+
+    public MyLocationClickListener(CallbackContext providedCallback) {
+      this.callback = providedCallback;
+    }
+
+    @Override
+    public void onClick(View v) {
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+      pluginResult.setKeepCallback(true);
+      callback.sendPluginResult(pluginResult);
+    }
+  }
+
   private class RegionIsChangingListener implements MapView.OnMapChangedListener {
     private CallbackContext callback;
 
@@ -661,6 +674,22 @@ public class Mapbox extends CordovaPlugin {
         pluginResult.setKeepCallback(true);
         callback.sendPluginResult(pluginResult);
       }
+    }
+  }
+
+  private class SetMyLocationListener implements View.OnClickListener {
+
+    private CallbackContext callback;
+
+    public SetMyLocationListener(CallbackContext providedCallback) {
+      this.callback = providedCallback;
+    }
+
+    @Override
+    public void onClick(View v) {
+      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
+      pluginResult.setKeepCallback(true);
+      callback.sendPluginResult(pluginResult);
     }
   }
 
