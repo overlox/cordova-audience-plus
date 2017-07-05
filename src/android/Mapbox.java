@@ -628,21 +628,6 @@ public class Mapbox extends CordovaPlugin {
     }
   }
 
-  private class MyLocationClickListener implements View.OnClickListener {
-    private CallbackContext callback;
-
-    public MyLocationClickListener(CallbackContext providedCallback) {
-      this.callback = providedCallback;
-    }
-
-    @Override
-    public void onClick(View v) {
-      PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-      pluginResult.setKeepCallback(true);
-      callback.sendPluginResult(pluginResult);
-    }
-  }
-
   private class RegionIsChangingListener implements MapView.OnMapChangedListener {
     private CallbackContext callback;
 
