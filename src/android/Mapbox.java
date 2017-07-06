@@ -20,6 +20,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.graphics.Color;
 
 import com.caverock.androidsvg.SVG;
 import com.caverock.androidsvg.SVGParseException;
@@ -73,6 +74,7 @@ public class Mapbox extends CordovaPlugin {
   private static final String ACTION_ADD_MARKER = "addMarker";
   private static final String ACTION_REMOVE_MARKER = "removeMarker";
   private static final String ACTION_UPDATE_MARKER = "updateMarker";
+  private static final String SHOW_MARKER_ANNOTATION = "showMarkerAnnotation";
   private static final String ACTION_REMOVE_ALL_MARKERS = "removeAllMarkers";
   private static final String ACTION_ADD_MARKER_CALLBACK = "addMarkerCallback";
   // TODO:
@@ -107,11 +109,9 @@ public class Mapbox extends CordovaPlugin {
   private boolean setMyLocation;
   private Button my_location_button;
 
-
   @Override
   public void initialize(CordovaInterface cordova, CordovaWebView webView) {
     super.initialize(cordova, webView);
-
     DisplayMetrics metrics = new DisplayMetrics();
     cordova.getActivity().getWindowManager().getDefaultDisplay().getMetrics(metrics);
     retinaFactor = metrics.density;
@@ -214,7 +214,8 @@ public class Mapbox extends CordovaPlugin {
               try {
                 Context ctx = cordova.getActivity().getApplicationContext();
                 InputStream istream = ctx.getResources().getAssets().open("www/img/loc.svg");
-                my_location_button.setBackground(
+                my_location_button.setBackgroundColor(Color.TRANSPARENT);
+                my_location_button.setForeground(
                         createSVG(SVG.getFromInputStream(istream), 200, 200));
               } catch (Throwable e) {
                 callbackContext.error(e.toString());
@@ -426,6 +427,34 @@ public class Mapbox extends CordovaPlugin {
           public void run() {
             try {
               addMarkers(args.getJSONArray(0));
+              callbackContext.success();
+            } catch (Throwable e) {
+              callbackContext.error(e.toString());
+            }
+          }
+        });
+      } else if (SHOW_MARKER_ANNOTATION.equals(action)) {
+        cordova.getActivity().runOnUiThread(new Runnable() {
+          @Override
+          public void run() {
+            try {
+              JSONObject marker = args.getJSONObject(0);
+              List<Annotation> markers = mapView.getAllAnnotations();
+              Annotation sel_marker = null;
+              for (int i = 0; i < markers.size(); i++) {
+                Marker sel = (Marker) markers.get(i);
+                if (sel.getTitle().equals(marker.getString("title"))){
+                  mapView.selectMarker(sel);
+                }
+              }
+              final MarkerOptions mo = new MarkerOptions();
+              mo.title(marker.isNull("title") ? null : marker.getString("title"));
+              mo.snippet(marker.isNull("subtitle") ? null : marker.getString("subtitle"));
+              mo.position(new LatLng(marker.getDouble("lat"), marker.getDouble("lng")));
+              if (marker.has("image")) {
+                mo.icon(createIcon(marker));
+              }
+              mapView.addMarker(mo);
               callbackContext.success();
             } catch (Throwable e) {
               callbackContext.error(e.toString());
