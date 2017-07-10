@@ -9,7 +9,7 @@
 @implementation CDVMapbox
 
 +(void) initialize
-{
+{ 
     [super initialize];
     MakeSureSVGghLinks(); // classes only used in Storyboards might not link otherwise
     [GHControlFactory setDefaultScheme:kColorSchemeClear];
@@ -266,7 +266,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
     NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
     MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
-    [_mapView removeAnnotations:[NSArray arrayWithObjects:annotation, nil]];
+    [_mapView removeAnnotation:annotation];
 
     CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
@@ -278,7 +278,7 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
     NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
     MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
-    [_mapView removeAnnotations:[NSArray arrayWithObjects:annotation, nil]];
+    [_mapView removeAnnotation:annotation];
 
     if (marker != nil) {
         NSArray *markers = [NSArray arrayWithObjects:marker, nil];
@@ -295,8 +295,29 @@
     NSPredicate *predicate = [NSPredicate predicateWithFormat:@"title==%@", [marker valueForKey:@"title"]];
     NSArray *results = [annotations filteredArrayUsingPredicate:predicate];
     MapboxPointAnnotationWithImage *annotation = [results objectAtIndex:0];
-    if (marker != nil)
-    [_mapView selectAnnotation:annotation animated:YES];
+
+    [_mapView removeAnnotation:annotation];
+    if (marker != nil) {
+        MapboxPointAnnotationWithImage *point = [[MapboxPointAnnotationWithImage alloc] init];
+        NSNumber *lat = [marker valueForKey:@"lat"];
+        NSNumber *lng = [marker valueForKey:@"lng"];
+        point.coordinate = CLLocationCoordinate2DMake(lat.doubleValue, lng.doubleValue);
+        point.title = [marker valueForKey:@"title"];
+        point.subtitle = [marker valueForKey:@"subtitle"];
+        NSObject *imageData=[marker valueForKey:@"image"];
+        if(imageData)
+        {
+            if([imageData isKindOfClass:[NSString class]])
+            {
+                NSDictionary *imageValues=[[NSDictionary alloc] init];
+                [imageValues setValue:imageData forKey:@"url"];
+                imageData=imageValues;
+            }
+            point.imageData=(NSDictionary*)imageData;
+        }
+        [_mapView addAnnotation:point];
+        [_mapView selectAnnotation:point animated:YES];
+    }
     CDVPluginResult * pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 }
@@ -323,7 +344,6 @@
 }
 
 - (void) putMarkersOnTheMap:(NSArray *)markers {
-  [self.commandDelegate runInBackground:^{
       for (int i = 0; i < markers.count; i++) {
         NSDictionary* marker = markers[i];
         MapboxPointAnnotationWithImage *point = [[MapboxPointAnnotationWithImage alloc] init];
@@ -345,7 +365,6 @@
           }
         [_mapView addAnnotation:point];
       }
-  }];
 }
 
 -(NSData *)dataFromBase64EncodedString:(NSString *)string{
