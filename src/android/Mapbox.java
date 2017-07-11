@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.support.v4.app.ActivityCompat;
 import android.util.Base64;
@@ -208,7 +209,7 @@ public class Mapbox extends CordovaPlugin {
             layout.addView(mapView);
 
             if (setMyLocation) {
-              RelativeLayout.LayoutParams lparams = new RelativeLayout.LayoutParams(200, 200);
+              LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(200, 200);
               lparams.setMargins(webViewWidth - left - right - 220, webViewHeight - top - bottom - 220, 0, 0);
               my_location_button = new Button(mapView.getContext());
               try {
@@ -440,11 +441,11 @@ public class Mapbox extends CordovaPlugin {
             try {
               JSONObject marker = args.getJSONObject(0);
               List<Annotation> markers = mapView.getAllAnnotations();
-              Annotation sel_marker = null;
+
               for (int i = 0; i < markers.size(); i++) {
                 Marker sel = (Marker) markers.get(i);
                 if (sel.getTitle().equals(marker.getString("title"))){
-                  mapView.selectMarker(sel);
+                  mapView.removeMarker(sel);
                 }
               }
               final MarkerOptions mo = new MarkerOptions();
@@ -454,7 +455,8 @@ public class Mapbox extends CordovaPlugin {
               if (marker.has("image")) {
                 mo.icon(createIcon(marker));
               }
-              mapView.addMarker(mo);
+              Marker m = mapView.addMarker(mo);
+              mapView.selectMarker(m);
               callbackContext.success();
             } catch (Throwable e) {
               callbackContext.error(e.toString());
@@ -468,7 +470,6 @@ public class Mapbox extends CordovaPlugin {
             try {
               JSONObject marker = args.getJSONObject(0);
               List<Annotation> markers = mapView.getAllAnnotations();
-              Annotation sel_marker = null;
               for (int i = 0; i < markers.size(); i++) {
                 Marker sel = (Marker) markers.get(i);
                 if (sel.getTitle().equals(marker.getString("title"))){
@@ -502,54 +503,54 @@ public class Mapbox extends CordovaPlugin {
 
       } else if (ACTION_ADD_MARKER_CALLBACK.equals(action)) {
         this.markerCallbackContext = callbackContext;
-        mapView.setOnInfoWindowClickListener(new MarkerClickListener());
+        mapView.setOnInfoWindowClickListener(new com.telerik.plugins.mapbox.Mapbox.MarkerClickListener());
 
       } else if(ACTION_ADD_BACKBUTTON_CALLBACK.equals(action)){
-		    this.backbuttonCallbackContext = callbackContext;
-		    cordova.getActivity().runOnUiThread(new Runnable() {
+        this.backbuttonCallbackContext = callbackContext;
+        cordova.getActivity().runOnUiThread(new Runnable() {
           @Override
           public void run() {
-		        if(mapView!=null)
-			        if(backbuttonCallbackContext!=null)
-			          //@anothar registering backbutton handler
+            if(mapView!=null)
+              if(backbuttonCallbackContext!=null)
+                //@anothar registering backbutton handler
                 mapView.setOnKeyListener(new View.OnKeyListener() {
-                @Override
-                public boolean onKey(View v, int keyCode, KeyEvent event) {
-                  if (Integer.parseInt(android.os.Build.VERSION.SDK) > 5
-                          && keyCode == KeyEvent.KEYCODE_BACK
-                          && event.getRepeatCount() == 0) {
+                  @Override
+                  public boolean onKey(View v, int keyCode, KeyEvent event) {
+                    if (Integer.parseInt(android.os.Build.VERSION.SDK) > 5
+                            && keyCode == KeyEvent.KEYCODE_BACK
+                            && event.getRepeatCount() == 0) {
 
-                    if(event.getAction()!=KeyEvent.ACTION_DOWN)
-                    {
+                      if(event.getAction()!=KeyEvent.ACTION_DOWN)
+                      {
                         PluginResult pluginResult = new PluginResult(PluginResult.Status.OK);
-					    pluginResult.setKeepCallback(true);
-						backbuttonCallbackContext.sendPluginResult(pluginResult);
-                    }  
-                    return true;
+                        pluginResult.setKeepCallback(true);
+                        backbuttonCallbackContext.sendPluginResult(pluginResult);
+                      }
+                      return true;
+                    }
+                    return false;
                   }
-                  return false;
-                }
-              });
-			    else
-				    mapView.setOnKeyListener(null);
-		  }});
-	  } else if (ACTION_ON_REGION_WILL_CHANGE.equals(action)) {
+                });
+              else
+                mapView.setOnKeyListener(null);
+          }});
+      } else if (ACTION_ON_REGION_WILL_CHANGE.equals(action)) {
         if (mapView != null) {
-          mapView.addOnMapChangedListener(new RegionWillChangeListener(callbackContext));
+          mapView.addOnMapChangedListener(new com.telerik.plugins.mapbox.Mapbox.RegionWillChangeListener(callbackContext));
         }
 
       } else if (ACTION_ON_REGION_IS_CHANGING.equals(action)) {
         if (mapView != null) {
-          mapView.addOnMapChangedListener(new RegionIsChangingListener(callbackContext));
+          mapView.addOnMapChangedListener(new com.telerik.plugins.mapbox.Mapbox.RegionIsChangingListener(callbackContext));
         }
 
       } else if (ACTION_ON_REGION_DID_CHANGE.equals(action)) {
         if (mapView != null) {
-          mapView.addOnMapChangedListener(new RegionDidChangeListener(callbackContext));
+          mapView.addOnMapChangedListener(new com.telerik.plugins.mapbox.Mapbox.RegionDidChangeListener(callbackContext));
         }
 
       } else if (ACTION_ON_SET_MY_LOCATION.equals(action)) {
-          my_location_button.setOnClickListener(new SetMyLocationListener(callbackContext));
+        my_location_button.setOnClickListener(new com.telerik.plugins.mapbox.Mapbox.SetMyLocationListener(callbackContext));
       } else {
         return false;
       }
@@ -619,7 +620,7 @@ public class Mapbox extends CordovaPlugin {
     } finally {
       if (istream != null)
         istream.close();
-  }
+    }
     return icon;
   }
 
