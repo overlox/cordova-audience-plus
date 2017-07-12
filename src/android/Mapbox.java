@@ -209,9 +209,9 @@ public class Mapbox extends CordovaPlugin {
             layout.addView(mapView);
 
             if (setMyLocation) {
-              LinearLayout.LayoutParams lparams = new LinearLayout.LayoutParams(200, 200);
+              FrameLayout.LayoutParams lparams = new FrameLayout.LayoutParams(200, 200);
               lparams.setMargins(webViewWidth - left - right - 220, webViewHeight - top - bottom - 220, 0, 0);
-              my_location_button = new Button(mapView.getContext());
+              my_location_button = new Button(webView.getContext());
               try {
                 Context ctx = cordova.getActivity().getApplicationContext();
                 InputStream istream = ctx.getResources().getAssets().open("www/img/loc.svg");
