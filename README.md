@@ -40,7 +40,7 @@ Github master (lastest develop)
 $ cordova plugin add https://github.com/Telerik-Verified-Plugins/Mapbox --variable ACCESS_TOKEN=your.access.token
 ```
 
-Mapbox.js is brought in automatically. There is no need to change or add anything in your html.
+AudiencePlus.js is brought in automatically. There is no need to change or add anything in your html.
 
 ## 4. Usage
 
